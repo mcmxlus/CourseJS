@@ -1,29 +1,23 @@
-const inputDates = ['10.02.22', 'ТЭС', '11-12-23', '0.13.22', '41.12', '29/02/24', '29/02/23', '31-04-22'];
+const inputDates = ['10-02-2022', 'тест', '11/12/2023', '00/13/2022', '41/12/2023'];
 
 function parseDate(dateStr) {
 	if (typeof dateStr !== 'string') return null;
 
-	let day, month, year, separator;
+	let day, month, year;
 
 	if (dateStr.includes('-')) {
-		separator = '-';
-		// Формат MM-DD-YY
-		[month, day, year] = dateStr.split(separator);
+		// Формат DD-MM-YYYY
+		[day, month, year] = dateStr.split('-');
 	} else if (dateStr.includes('/')) {
-		separator = '/';
-		// Формат DD/MM/YY
-		[day, month, year] = dateStr.split(separator);
-	} else if (dateStr.includes('.')) {
-		separator = '.';
-		// Формат DD.MM.YY
-		[day, month, year] = dateStr.split(separator);
+		// Формат MM/DD/YYYY
+		[month, day, year] = dateStr.split('/');
 	} else {
 		return null;
 	}
 
-	// Проверяем, что строка разделилась ровно на 3 части и каждая состоит из 2 цифр
+	// Проверяем наличие всех частей и их длину (день и месяц — 2 цифры, год — 4 цифры)
 	if (!day || !month || !year) return null;
-	if (!/^\d{2}$/.test(day) || !/^\d{2}$/.test(month) || !/^\d{2}$/.test(year)) {
+	if (!/^\d{2}$/.test(day) || !/^\d{2}$/.test(month) || !/^\d{4}$/.test(year)) {
 		return null;
 	}
 
@@ -42,14 +36,12 @@ function isValidDate(parsed) {
 
 	const { day, month, year } = parsed;
 
-	// Базовая проверка (sanity-check)
+	// Базовая проверка диапазонов
 	if (month < 1 || month > 12) return false;
 	if (day < 1 || day > 31) return false;
 
-	// Усложнение: проверка количества дней в конкретном месяце и високосного года
-	const fullYear = 2000 + year;
-	const isLeapYear = (fullYear % 4 === 0 && fullYear % 100 !== 0) || fullYear % 400 === 0;
-
+	// Проверка високосного года (год уже 4-значный, 2000 прибавлять не нужно)
+	const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
 	const daysInMonth = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 	return day <= daysInMonth[month - 1];
@@ -57,9 +49,11 @@ function isValidDate(parsed) {
 
 function formatDates(datesArray) {
 	return datesArray
-		.map(parseDate) // 1. Разбираем строки в объекты с учетом разделителя
-		.filter(isValidDate) // 2. Отсеиваем null и логически некорректные даты
-		.map(({ rawDay, rawMonth, rawYear }) => `${rawDay}-${rawMonth}-${rawYear}`); // 3. Приводим к DD.MM.YY
+		.map(parseDate)
+		.filter(isValidDate)
+		.map(({ rawDay, rawMonth, rawYear }) => `${rawDay}-${rawMonth}-${rawYear}`);
 }
 
 console.log(formatDates(inputDates));
+// Вывод: [ '10-02-2022', '12-11-2023' ]
+
